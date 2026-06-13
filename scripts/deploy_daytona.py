@@ -6,6 +6,7 @@ backend/requirements.txt, clones the repo into the sandbox, and starts uvicorn.
 
 import os
 import time
+import urllib.request
 
 from daytona import (
     CreateSandboxFromImageParams,
@@ -33,6 +34,16 @@ def get_env_vars() -> dict[str, str]:
     return {k: os.environ[k] for k in ENV_KEYS if k in os.environ}
 
 
+def exec_or_raise(sandbox, command: str) -> str:
+    """Execute a command in the sandbox and raise on non-zero exit codes."""
+    result = sandbox.process.exec(command)
+    if result.exit_code != 0:
+        raise RuntimeError(
+            f"Command failed with exit code {result.exit_code}: {command}\n{result.result}"
+        )
+    return result.result
+
+
 def main() -> None:
     api_key = os.environ["DAYTONA_API_KEY"]
     config = DaytonaConfig(api_key=api_key)
@@ -57,7 +68,8 @@ def main() -> None:
         image=image,
         env_vars=get_env_vars(),
         resources=Resources(cpu=1, memory=2, disk=8),
-        auto_stop_interval=0,  # Keep the API sandbox running.
+        auto_stop_interval=60,  # Keep the sandbox alive for 60 minutes of inactivity.
+        public=True,  # Preview URL is reachable without an auth token.
     )
 
     print("Building Daytona sandbox image (this may take a minute)...")
@@ -70,14 +82,10 @@ def main() -> None:
     else:
         clone_url = f"https://github.com/{repo}.git"
 
-    clone_cmd = (
-        f"git clone --depth 1 {clone_url} /home/daytona/app "
-        f"&& cd /home/daytona/app && git fetch --depth 1 origin {ref} "
-        f"&& git checkout {ref}"
-    )
     print("Cloning repository into sandbox...")
-    result = sandbox.process.exec(clone_cmd)
-    print(result.result)
+    exec_or_raise(sandbox, f"git clone {clone_url} /home/daytona/app")
+    exec_or_raise(sandbox, f"cd /home/daytona/app && git checkout {ref}")
+    print("Repository cloned and checked out.")
 
     # Start uvicorn in a persistent session so it outlives this script.
     session_id = "auratrip-api"
@@ -95,17 +103,30 @@ def main() -> None:
     )
     print(f"Uvicorn started: cmd_id={command.cmd_id}")
 
-    # Give the server a moment to start, then health-check internally.
+    # Give the server a moment to start, then health-check via the public preview URL.
     time.sleep(5)
-    health = sandbox.process.exec(
-        "curl -s http://localhost:8000/health || echo 'not ready'"
-    )
-    print("Health check:", health.result)
 
-    # Expose the service via a Daytona preview URL.
     preview = sandbox.get_preview_link(8000)
     print(f"Preview URL: {preview.url}")
     print(f"Preview Token: {preview.token}")
+
+    try:
+        req = urllib.request.Request(
+            preview.url + "/health",
+            headers={"x-daytona-preview-token": preview.token} if preview.token else {},
+        )
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            body = resp.read().decode()
+            print("Health check:", body)
+            if '"status":"ok"' not in body and '"status": "ok"' not in body:
+                raise RuntimeError(f"Unexpected health response: {body}")
+    except Exception as exc:
+        print("Health check failed.")
+        print(exc)
+        print("Uvicorn logs:")
+        logs = sandbox.process.exec("cat /tmp/uvicorn.log || echo 'no logs'")
+        print(logs.result)
+        raise
 
 
 if __name__ == "__main__":
