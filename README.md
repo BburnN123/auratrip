@@ -6,8 +6,31 @@ This project was generated using [Angular CLI](https://github.com/angular/angula
 
 To start a local development server, run:
 
-```bash
-ng serve
+## Project Structure
+
+```
+backend/
+  src/
+    api/main.py              # FastAPI entry point
+    agents/                  # Scout, Weather, Planner, Visual agents (stubs)
+    client/                  # External API client wrappers (stubs)
+    models/                  # Pydantic models
+    services/                # Business services (stubs)
+  tests/test_main.py         # API unit tests
+  requirements.txt           # Python dependencies
+  Dockerfile                 # Optional Docker fallback
+
+common/
+  types/                     # Shared TypeScript types
+  utils/                     # Shared validators/formatters
+
+scripts/
+  deploy_service.py          # Generic blue-green Daytona deployment
+  deploy_daytona.py          # API service wrapper for deploy_service.py
+  deploy.sh                  # CI wrapper
+
+docs/
+  ARCHITECTURE.md            # Full architecture and roadmap
 ```
 
 Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
@@ -28,11 +51,14 @@ ng generate --help
 
 ## Building
 
-To build the project run:
+Pushing to `main` triggers the `.github/workflows/deploy.yml` GitHub Action. It uses the Daytona SDK for a **blue-green** deployment:
 
-```bash
-ng build
-```
+1. Build a new sandbox image from `backend/requirements.txt`.
+2. Clone the repo into the new sandbox.
+3. Start the FastAPI server and run a health check.
+4. Only after the health check passes, delete the old `auratrip-api` sandbox(es).
+
+Sandboxes are named `auratrip-api-<timestamp>` and labeled `service=auratrip-api`, so each service has its own namespace and old instances are cleaned up automatically.
 
 This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
 
@@ -52,7 +78,22 @@ For end-to-end (e2e) testing, run:
 ng e2e
 ```
 
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
+### Deploying Additional Services
+
+`scripts/deploy_service.py` is generic. Create a new wrapper script (e.g. `scripts/deploy_worker.py`) that sets:
+
+- `DAYTONA_SERVICE_NAME`
+- `DAYTONA_SERVICE_PORT`
+- `DAYTONA_SERVICE_DIR`
+- `DAYTONA_REQUIREMENTS_PATH`
+- `DAYTONA_START_COMMAND` (optional)
+- `DAYTONA_ENV_KEYS`
+
+Each service is labeled independently, so deployments don't interfere with each other.
+
+## Environment Variables
+
+See `.env.example` for the full list of configuration values. Only the variables you actually use need to be set for local development.
 
 ## Additional Resources
 
