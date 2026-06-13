@@ -6,6 +6,7 @@ backend/requirements.txt, clones the repo into the sandbox, and starts uvicorn.
 
 import os
 import time
+import urllib.request
 
 from daytona import (
     CreateSandboxFromImageParams,
@@ -102,31 +103,30 @@ def main() -> None:
     )
     print(f"Uvicorn started: cmd_id={command.cmd_id}")
 
-    # Give the server a moment to start, then health-check internally.
+    # Give the server a moment to start, then health-check via the public preview URL.
     time.sleep(5)
 
-    health_check_script = (
-        "import urllib.request; "
-        "resp = urllib.request.urlopen('http://localhost:8000/health', timeout=5); "
-        "print(resp.read().decode())"
-    )
+    preview = sandbox.get_preview_link(8000)
+    print(f"Preview URL: {preview.url}")
+    print(f"Preview Token: {preview.token}")
+
     try:
-        health = exec_or_raise(
-            sandbox, f"python -c '{health_check_script}'"
+        req = urllib.request.Request(
+            preview.url + "/health",
+            headers={"x-daytona-preview-token": preview.token} if preview.token else {},
         )
-        print("Health check:", health)
-    except RuntimeError as exc:
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            body = resp.read().decode()
+            print("Health check:", body)
+            if '"status":"ok"' not in body and '"status": "ok"' not in body:
+                raise RuntimeError(f"Unexpected health response: {body}")
+    except Exception as exc:
         print("Health check failed.")
         print(exc)
         print("Uvicorn logs:")
         logs = sandbox.process.exec("cat /tmp/uvicorn.log || echo 'no logs'")
         print(logs.result)
         raise
-
-    # Expose the service via a Daytona preview URL.
-    preview = sandbox.get_preview_link(8000)
-    print(f"Preview URL: {preview.url}")
-    print(f"Preview Token: {preview.token}")
 
 
 if __name__ == "__main__":
