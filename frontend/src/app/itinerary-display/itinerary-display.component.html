@@ -1,0 +1,15 @@
+<div class="itinerary-container" *ngIf="itinerary">
+  <h2>Your Planned Itinerary 🗺️</h2>
+  <div *ngFor="let day of itinerary.days" class="day-card">
+    <h3>Day {{ day.number }}</h3>
+    <ul>
+      <li *ngFor="let activity of day.activities">
+        {{ activity.time }} - {{ activity.description }}
+      </li>
+    </ul>
+  </div>
+</div>
+
+<div *ngIf="!itinerary">
+  <p>No itinerary loaded yet.</p>
+</div>

@@ -1,0 +1,37 @@
+<div class="travel-form">
+  <h2>Plan Your Journey ✈️</h2>
+  <form [formGroup]="travelForm" (ngSubmit)="onSubmit()">
+    <label>
+      Origin
+      <input formControlName="origin" type="text" placeholder="Enter origin city">
+    </label>
+
+    <label>
+      Destination
+      <input formControlName="destination" type="text" placeholder="Enter destination city">
+    </label>
+
+    <label>
+      Start Date
+      <input formControlName="startDate" type="date">
+    </label>
+
+    <label>
+      End Date
+      <input formControlName="endDate" type="date">
+    </label>
+
+    <label>
+      Meal Preference
+      <select formControlName="mealPreference">
+        <option value="">Select</option>
+        <option value="vegetarian">Vegetarian</option>
+        <option value="vegan">Vegan</option>
+        <option value="halal">Halal</option>
+        <option value="none">No preference</option>
+      </select>
+    </label>
+
+    <button type="submit">Generate Itinerary</button>
+  </form>
+</div>
