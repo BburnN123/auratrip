@@ -1,10 +1,15 @@
 """Backend application settings."""
 
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
     """Application configuration loaded from environment variables."""
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+    )
+
     app_name: str = "Auratrip"
     debug: bool = False
     secret_key: str = "change-me-in-production"
@@ -33,10 +38,6 @@ class Settings(BaseSettings):
 
     # Video infrastructure
     videodb_api_key: str | None = None
-
-    class Config:
-        env_file = ".env"
-        env_file_encoding = "utf-8"
 
 
 settings = Settings()

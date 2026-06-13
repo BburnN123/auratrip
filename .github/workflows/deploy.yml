@@ -21,6 +21,7 @@ jobs:
 
       - name: Deploy backend to Daytona Sandbox
         env:
+          DAYTONA_API_URL: https://app.daytona.io/api
           DAYTONA_API_KEY: ${{ secrets.DAYTONA_API_KEY }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_REPOSITORY: ${{ github.repository }}
