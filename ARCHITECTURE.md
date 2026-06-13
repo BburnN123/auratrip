@@ -217,6 +217,8 @@ The following diagram illustrates the major components and data flow of the Aura
 
 **Type:** PostgreSQL 15
 
+**Status:** Not yet implemented in the current codebase. The minimal API uses in-memory placeholders, so no Postgres instance is required for the MVP.
+
 **Purpose:** Stores user accounts, trip metadata, generated itineraries, agent execution logs, and scraped post references. Serves as the system of record for all persistent application data.
 
 **Key Schemas/Collections:**
@@ -232,6 +234,8 @@ The following diagram illustrates the major components and data flow of the Aura
 **Name:** Redis Cluster
 
 **Type:** Redis 7 (with persistence)
+
+**Status:** Not yet implemented in the current codebase.
 
 **Purpose:** Caches frequently accessed itineraries, TokenRouter smart-cache entries, user session states, and real-time agent coordination locks. Enables sub-second response times for repeat queries.
 
@@ -350,6 +354,8 @@ The following diagram illustrates the major components and data flow of the Aura
 - Clip extraction and frame analysis workflows
 
 ### 5.9. Weather Validation APIs
+
+**Status:** Not yet implemented in the current codebase.
 
 **Purpose:** Cross-reference weather signals extracted from social media with official meteorological data to validate accuracy.
 

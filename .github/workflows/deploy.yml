@@ -1,13 +1,38 @@
 name: Deploy
 
 on:
-  push:
-    branches: [main]
+  workflow_dispatch:
 
 jobs:
-  deploy:
+  deploy-to-daytona:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v4
-      - name: Deploy
-        run: echo "Deploying Auratrip..."
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Daytona SDK
+        run: pip install daytona
+
+      - name: Deploy backend to Daytona Sandbox
+        env:
+          DAYTONA_API_URL: https://app.daytona.io/api
+          DAYTONA_API_KEY: ${{ secrets.DAYTONA_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_SHA: ${{ github.sha }}
+          # Application secrets forwarded into the sandbox
+          SECRET_KEY: ${{ secrets.SECRET_KEY }}
+          KIMI_API_KEY: ${{ secrets.KIMI_API_KEY }}
+          TOKENROUTER_API_KEY: ${{ secrets.TOKENROUTER_API_KEY }}
+          BRIGHT_DATA_API_KEY: ${{ secrets.BRIGHT_DATA_API_KEY }}
+          NOSANA_API_KEY: ${{ secrets.NOSANA_API_KEY }}
+          SENSENOVA_API_KEY: ${{ secrets.SENSENOVA_API_KEY }}
+          TERMINAL3_API_KEY: ${{ secrets.TERMINAL3_API_KEY }}
+          VIDEODB_API_KEY: ${{ secrets.VIDEODB_API_KEY }}
+        run: bash scripts/deploy.sh
