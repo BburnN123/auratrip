@@ -1,3 +1,4 @@
+
 # Auratrip
 
 Auratrip is an AI-powered trip planner that turns a destination and dates into a dynamic, evidence-based itinerary. It scrapes real-time social-media signals, validates them with specialized agents, and generates itinerary visuals — all orchestrated inside Daytona sandboxes.
@@ -164,3 +165,16 @@ See `.env.example` for the full list of backend configuration values. Only the v
 
 - PostgreSQL, Redis, and OpenWeather integration are described in `ARCHITECTURE.md` but are **not yet implemented** in the codebase.
 - The agent, client, and service modules in `backend/src/` are placeholder stubs ready for implementation.
+
+# auratrip
+Agent hackathon
+
+# Create from Bright Data
+https://brightdata.com/cp/web_access/scrape/stats?id=hl_6bb8cf74
+
+
+# How to create scraping process
+https://docs.brightdata.com/scraping-automation/scraping-browser/five-minute-how-to#python
+
+# Able to scrape via geo location
+https://docs.brightdata.com/scraping-automation/scraping-browser/features/proxy-location
