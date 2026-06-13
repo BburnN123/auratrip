@@ -28,8 +28,9 @@ common/
   utils/                     # Shared validators/formatters
 
 scripts/
-  deploy_daytona.py          # Daytona SDK deployment script
-  deploy.sh                  # CI wrapper for deploy_daytona.py
+  deploy_service.py          # Generic blue-green Daytona deployment
+  deploy_daytona.py          # API service wrapper for deploy_service.py
+  deploy.sh                  # CI wrapper
 
 docs/
   ARCHITECTURE.md            # Full architecture and roadmap
@@ -70,12 +71,14 @@ docs/
 
 ## Deploy to Daytona
 
-Pushing to `main` triggers the `.github/workflows/deploy.yml` GitHub Action. It uses the Daytona SDK to:
+Pushing to `main` triggers the `.github/workflows/deploy.yml` GitHub Action. It uses the Daytona SDK for a **blue-green** deployment:
 
-1. Build a sandbox image from `backend/requirements.txt`.
-2. Clone the repo into the sandbox.
-3. Start the FastAPI server.
-4. Health-check the public preview URL.
+1. Build a new sandbox image from `backend/requirements.txt`.
+2. Clone the repo into the new sandbox.
+3. Start the FastAPI server and run a health check.
+4. Only after the health check passes, delete the old `auratrip-api` sandbox(es).
+
+Sandboxes are named `auratrip-api-<timestamp>` and labeled `service=auratrip-api`, so each service has its own namespace and old instances are cleaned up automatically.
 
 Required repository secrets:
 
@@ -100,6 +103,19 @@ Ping it with:
 ```bash
 curl https://8000-<sandbox-id>.<daytona-proxy-domain>/health
 ```
+
+### Deploying Additional Services
+
+`scripts/deploy_service.py` is generic. Create a new wrapper script (e.g. `scripts/deploy_worker.py`) that sets:
+
+- `DAYTONA_SERVICE_NAME`
+- `DAYTONA_SERVICE_PORT`
+- `DAYTONA_SERVICE_DIR`
+- `DAYTONA_REQUIREMENTS_PATH`
+- `DAYTONA_START_COMMAND` (optional)
+- `DAYTONA_ENV_KEYS`
+
+Each service is labeled independently, so deployments don't interfere with each other.
 
 ## Environment Variables
 
