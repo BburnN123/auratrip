@@ -1,13 +1,10 @@
-# Auratrip
+# Auratrip1
 
-Auratrip is an AI-powered trip planner that turns a destination and dates into a dynamic, evidence-based itinerary. It scrapes real-time social-media signals, validates them with specialized agents, and generates itinerary visuals — all orchestrated inside Daytona sandboxes.
+This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 22.0.1.
 
-## Tech Stack
+## Development server
 
-- **Backend:** Python 3.12, FastAPI, Pydantic
-- **Agent Runtime:** Daytona Sandboxes
-- **CI/CD:** GitHub Actions
-- **Shared Types:** TypeScript interfaces (used by the frontend teammate)
+To start a local development server, run:
 
 ## Project Structure
 
@@ -36,40 +33,23 @@ docs/
   ARCHITECTURE.md            # Full architecture and roadmap
 ```
 
-## Local Development
+Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
 
-1. **Install dependencies**
+## Code scaffolding
 
-   ```bash
-   cd backend
-   python3 -m venv .venv
-   source .venv/bin/activate
-   pip install -r requirements.txt
-   ```
+Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
 
-2. **Configure secrets**
+```bash
+ng generate component component-name
+```
 
-   Copy `.env.example` to `.env` and fill in the API keys you need for your current work.
+For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
 
-   ```bash
-   cp .env.example .env
-   ```
+```bash
+ng generate --help
+```
 
-3. **Run the API**
-
-   ```bash
-   cd backend
-   uvicorn src.api.main:app --reload --host 0.0.0.0 --port 8000
-   ```
-
-4. **Run tests**
-
-   ```bash
-   cd backend
-   pytest tests
-   ```
-
-## Deploy to Daytona
+## Building
 
 Pushing to `main` triggers the `.github/workflows/deploy.yml` GitHub Action. It uses the Daytona SDK for a **blue-green** deployment:
 
@@ -80,28 +60,22 @@ Pushing to `main` triggers the `.github/workflows/deploy.yml` GitHub Action. It 
 
 Sandboxes are named `auratrip-api-<timestamp>` and labeled `service=auratrip-api`, so each service has its own namespace and old instances are cleaned up automatically.
 
-Required repository secrets:
+This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
 
-- `DAYTONA_API_KEY`
-- `SECRET_KEY`
-- `KIMI_API_KEY`
-- `TOKENROUTER_API_KEY`
-- `BRIGHT_DATA_API_KEY`
-- `NOSANA_API_KEY`
-- `SENSENOVA_API_KEY`
-- `TERMINAL3_API_KEY`
-- `VIDEODB_API_KEY`
+## Running unit tests
 
-After deployment, the GitHub Actions log prints the public preview URL:
-
-```
-Preview URL: https://8000-<sandbox-id>.<daytona-proxy-domain>
-```
-
-Ping it with:
+To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
 
 ```bash
-curl https://8000-<sandbox-id>.<daytona-proxy-domain>/health
+ng test
+```
+
+## Running end-to-end tests
+
+For end-to-end (e2e) testing, run:
+
+```bash
+ng e2e
 ```
 
 ### Deploying Additional Services
@@ -121,7 +95,6 @@ Each service is labeled independently, so deployments don't interfere with each 
 
 See `.env.example` for the full list of configuration values. Only the variables you actually use need to be set for local development.
 
-## Notes
+## Additional Resources
 
-- PostgreSQL, Redis, and OpenWeather integration are described in `ARCHITECTURE.md` but are **not yet implemented** in the codebase.
-- The agent, client, and service modules are placeholder stubs ready for implementation.
+For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
